@@ -1,17 +1,31 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import ReactFlow, {
-  Background,
-  Controls,
-  MiniMap,
-  useEdgesState,
-  useNodesState,
-} from 'reactflow';
+import ReactFlow, { Background, Controls, MiniMap, useEdgesState, useNodesState } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { MapCanvas } from './components/MapCanvas';
 import { ErrorConsole } from './components/ErrorConsole';
+import { IconNode } from './components/IconNode';
+import { catalogGroupedByOrder, buildNodeFromCatalog, CatalogGroupId, iconForVariant } from './lib/catalog';
 import { ArmadaProject, VehicleSpec } from './types';
 import { validateProject } from './lib/validation';
 import { subscribeToErrors, trackError, TrackedError } from './lib/errorTracking';
+
+const paletteOrder: CatalogGroupId[] = ['fuentes_de_agua', 'mangueras', 'pitones', 'accesorios'];
+const orderedCatalog = catalogGroupedByOrder(paletteOrder);
+
+const initialSource = buildNodeFromCatalog(
+  orderedCatalog[0].items.find((i) => i.variant === 'carro')!,
+  -33.4489,
+  -70.6693
+);
+initialSource.id = 'source-1';
+
+const initialNozzle = buildNodeFromCatalog(
+  orderedCatalog[2].items.find((i) => i.variant === 'piton')!,
+  -33.4495,
+  -70.6691
+);
+initialNozzle.id = 'nozzle-1';
+initialNozzle.params = { ...initialNozzle.params, flowTargetLpm: 500, pressure: 3.5 };
 
 const initialProject: ArmadaProject = {
   id: 'demo-1',
@@ -19,24 +33,7 @@ const initialProject: ArmadaProject = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   vehicleId: 'pumper-1500',
-  nodes: [
-    {
-      id: 'source-1',
-      type: 'source',
-      label: 'Carro bomba',
-      position: { lat: -33.4489, lng: -70.6693 },
-      params: { flowTargetLpm: 1500, pressure: 10 },
-      ports: { inputs: 0, outputs: 2 },
-    },
-    {
-      id: 'nozzle-1',
-      type: 'nozzle',
-      label: 'Boquilla 38mm',
-      position: { lat: -33.4495, lng: -70.6691 },
-      params: { flowTargetLpm: 500, pressure: 3.5 },
-      ports: { inputs: 1, outputs: 0 },
-    },
-  ],
+  nodes: [initialSource, initialNozzle],
   edges: [
     {
       id: 'edge-1',
@@ -61,19 +58,13 @@ function latLngToXY(center: [number, number], lat: number, lng: number) {
   return { x: dx + 400, y: dy + 300 };
 }
 
-const palette = [
-  { type: 'source', label: 'Fuente (carro)' },
-  { type: 'appliance', label: 'Accesorio' },
-  { type: 'hose', label: 'Manguera' },
-  { type: 'nozzle', label: 'Boquilla' },
-];
-
 function App() {
   const [project, setProject] = useState<ArmadaProject>(initialProject);
   const [validation, setValidation] = useState(() => validateProject(initialProject));
   const [vehicles, setVehicles] = useState<VehicleSpec[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleSpec | undefined>();
   const [errors, setErrors] = useState<TrackedError[]>([]);
+  const paletteGroups = useMemo(() => orderedCatalog, []);
 
   useEffect(() => {
     const unsubscribe = subscribeToErrors(setErrors);
@@ -102,9 +93,9 @@ function App() {
     () =>
       project.nodes.map((n) => ({
         id: n.id,
-        data: { label: n.label },
+        data: { label: n.label, icon: iconForVariant(n.variant), alt: n.label },
         position: latLngToXY(mapCenter, n.position.lat, n.position.lng),
-        type: 'default',
+        type: 'iconNode',
       })),
     [project.nodes]
   );
@@ -121,21 +112,29 @@ function App() {
     [project.edges]
   );
 
-  const [nodes, , onNodesChange] = useNodesState(flowNodes);
-  const [edges, , onEdgesChange] = useEdgesState(flowEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges);
 
-  const addComponent = (type: string) => {
-    const id = `${type}-${Date.now()}`;
-    const newNode = {
-      id,
-      type: type as any,
-      label: `${type} nuevo`,
-      position: { lat: initialProject.nodes[0].position.lat + 0.0003, lng: initialProject.nodes[0].position.lng },
-      params: { flowTargetLpm: 400, pressure: 3.5 },
-      ports: { inputs: 1, outputs: 1 },
-    };
+  useEffect(() => {
+    setNodes(flowNodes);
+  }, [flowNodes, setNodes]);
+
+  useEffect(() => {
+    setEdges(flowEdges);
+  }, [flowEdges, setEdges]);
+
+  const addComponent = (itemId: string) => {
+    const group = paletteGroups.flatMap((g) => g.items).find((c) => c.id === itemId);
+    if (!group) return;
+    const newNode = buildNodeFromCatalog(
+      group,
+      initialProject.nodes[0].position.lat + 0.0003,
+      initialProject.nodes[0].position.lng
+    );
     setProject((prev) => ({ ...prev, nodes: [...prev.nodes, newNode], updatedAt: new Date().toISOString() }));
   };
+
+  const nodeTypes = useMemo(() => ({ iconNode: IconNode }), []);
 
   const saveProject = async () => {
     try {
@@ -162,11 +161,25 @@ function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <h2>Catálogo</h2>
-        <div className="palette">
-          {palette.map((item) => (
-            <button key={item.type} onClick={() => addComponent(item.type)}>
-              {item.label}
-            </button>
+        <div className="palette-grid">
+          {paletteGroups.map((group) => (
+            <div key={group.id} className="palette-group">
+              <h4>{group.id.replace(/_/g, ' ')}</h4>
+              <div className="palette-items">
+                {group.items.map((item) => (
+                  <button
+                    key={item.id}
+                    className="palette-item"
+                    aria-label={item.label}
+                    title={item.label}
+                    onClick={() => addComponent(item.id)}
+                  >
+                    <img src={item.icon} alt="" />
+                    <span className="sr-only">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
 
@@ -226,6 +239,7 @@ function App() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
             fitView
           >
             <Background />

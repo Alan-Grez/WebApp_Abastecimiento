@@ -26,15 +26,57 @@ body, #root {
   margin-top: 0;
 }
 
-.palette button {
+.palette-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.palette-group h4 {
+  margin: 0 0 6px;
+  text-transform: capitalize;
+  color: #cbd5e1;
+}
+
+.palette-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 8px;
+}
+
+.palette-item {
   width: 100%;
-  margin-bottom: 8px;
-  padding: 8px;
-  border-radius: 6px;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
   border: 1px solid #1f2937;
-  background: #1f2937;
-  color: #e5e7eb;
-  cursor: grab;
+  background: radial-gradient(circle at 20% 20%, #1f2937, #111827 70%);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.palette-item:hover,
+.palette-item:focus-visible {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+.palette-item img {
+  max-width: 52px;
+  max-height: 52px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .map-canvas {
@@ -67,6 +109,24 @@ body, #root {
   right: 0;
   bottom: 0;
   pointer-events: none;
+}
+
+.icon-node {
+  width: 80px;
+  height: 80px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid #38bdf8;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.icon-node img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.45));
 }
 
 .validation-panel {
