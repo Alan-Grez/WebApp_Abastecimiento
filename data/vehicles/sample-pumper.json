@@ -1,0 +1,21 @@
+{
+  "id": "pumper-1500",
+  "name": "Pumper Urbano 1500 gpm",
+  "manufacturer": "Genérico",
+  "tankLiters": 3000,
+  "pumpCurve": [
+    { "flowLpm": 0, "pressureBar": 11 },
+    { "flowLpm": 1900, "pressureBar": 8.6 },
+    { "flowLpm": 3800, "pressureBar": 6.5 }
+  ],
+  "discharges": [
+    { "name": "LDH 1", "diameterMm": 100, "maxFlowLpm": 4200 },
+    { "name": "LDH 2", "diameterMm": 100, "maxFlowLpm": 4200 },
+    { "name": "Salida 2.5-1", "diameterMm": 65, "maxFlowLpm": 1600 }
+  ],
+  "intakes": [
+    { "name": "Succión dura", "diameterMm": 125, "maxVacuumBar": -0.8 }
+  ],
+  "modes": ["tank", "relay", "booster"],
+  "notes": "Curva simplificada para entrenamiento."
+}
