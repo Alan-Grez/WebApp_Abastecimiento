@@ -8,8 +8,10 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { MapCanvas } from './components/MapCanvas';
+import { ErrorConsole } from './components/ErrorConsole';
 import { ArmadaProject, VehicleSpec } from './types';
 import { validateProject } from './lib/validation';
+import { subscribeToErrors, trackError, TrackedError } from './lib/errorTracking';
 
 const initialProject: ArmadaProject = {
   id: 'demo-1',
@@ -71,6 +73,12 @@ function App() {
   const [validation, setValidation] = useState(() => validateProject(initialProject));
   const [vehicles, setVehicles] = useState<VehicleSpec[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleSpec | undefined>();
+  const [errors, setErrors] = useState<TrackedError[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToErrors(setErrors);
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     fetch('http://localhost:4000/api/vehicles')
@@ -80,8 +88,8 @@ function App() {
         const v = data.find((d: VehicleSpec) => d.id === project.vehicleId) || data[0];
         setSelectedVehicle(v);
       })
-      .catch(() => {
-        // fallback offline
+      .catch((err) => {
+        trackError(err, { action: 'fetch-vehicles' });
         setVehicles([]);
       });
   }, [project.vehicleId]);
@@ -130,12 +138,24 @@ function App() {
   };
 
   const saveProject = async () => {
-    await fetch('http://localhost:4000/api/plans', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(project),
-    });
-    alert('Proyecto guardado en backend (archivo JSON).');
+    try {
+      const response = await fetch('http://localhost:4000/api/plans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(project),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const err = new Error(payload.error || 'No se pudo guardar el proyecto');
+        trackError(err, { action: 'save-project', status: response.status, requestId: payload.requestId });
+        alert(`Error al guardar: ${err.message}` + (payload.requestId ? ` (ID ${payload.requestId})` : ''));
+        return;
+      }
+      alert('Proyecto guardado en backend (archivo JSON).');
+    } catch (error) {
+      const tracked = trackError(error, { action: 'save-project' });
+      alert(`No se pudo guardar. Revisa la consola de errores (${tracked.id}).`);
+    }
   };
 
   return (
@@ -196,6 +216,7 @@ function App() {
           )}
           <button onClick={saveProject}>Guardar armada</button>
         </div>
+        <ErrorConsole errors={errors} />
       </aside>
       <main className="map-canvas">
         <MapCanvas center={mapCenter} />
