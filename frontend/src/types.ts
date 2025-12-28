@@ -1,8 +1,10 @@
 export type NodeType = 'source' | 'appliance' | 'hose' | 'nozzle';
+export type NodeVariant = 'carro' | 'grifo' | 'piscina' | 'manguera' | 'piton' | 'accesorio';
 
 export interface ArmadaNode {
   id: string;
   type: NodeType;
+  variant: NodeVariant;
   label: string;
   position: { lat: number; lng: number };
   params: {
@@ -12,6 +14,14 @@ export interface ArmadaNode {
     lossCoefficient?: number;
   };
   ports: { inputs: number; outputs: number };
+  stats?: {
+    health: 'operational' | 'damaged';
+    inletDiameterMm?: number;
+    outletDiameterMm?: number;
+    maxOutputs?: number;
+    lengthMeters?: number;
+  };
+  connections?: { compatibleAccessories?: NodeVariant[] };
 }
 
 export interface ArmadaEdge {

@@ -1,4 +1,9 @@
-import { v4 as uuid } from 'uuid';
+function generateId() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `err-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
 
 export interface TrackedError {
   id: string;
@@ -40,7 +45,7 @@ export function trackError(error: unknown, context?: Record<string, unknown>): T
   }
 
   const entry: TrackedError = {
-    id: uuid(),
+    id: generateId(),
     message,
     stack,
     at: timestamp,
