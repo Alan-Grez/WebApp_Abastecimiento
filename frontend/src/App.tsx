@@ -64,7 +64,6 @@ function App() {
   const [vehicles, setVehicles] = useState<VehicleSpec[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleSpec | undefined>();
   const [errors, setErrors] = useState<TrackedError[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const paletteGroups = useMemo(() => orderedCatalog, []);
 
   useEffect(() => {
@@ -160,13 +159,8 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}>
-        <div className="sidebar__header">
-          <h2>Catálogo</h2>
-          <button className="sidebar__close" onClick={() => setSidebarOpen(false)}>
-            Cerrar
-          </button>
-        </div>
+      <aside className="sidebar">
+        <h2>Catálogo</h2>
         <div className="palette-grid">
           {paletteGroups.map((group) => (
             <div key={group.id} className="palette-group">

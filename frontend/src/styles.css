@@ -26,28 +26,6 @@ body, #root {
   margin-top: 0;
 }
 
-.sidebar__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  position: sticky;
-  top: 0;
-  padding: 4px 0;
-  background: linear-gradient(180deg, #111827 65%, rgba(17, 24, 39, 0));
-  z-index: 2;
-}
-
-.sidebar__close {
-  display: none;
-  border: 1px solid #1f2937;
-  background: #0b1220;
-  color: #e5e7eb;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
 .palette-grid {
   display: grid;
   gap: 12px;
