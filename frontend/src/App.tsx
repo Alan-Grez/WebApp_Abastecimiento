@@ -231,7 +231,15 @@ function App() {
         </div>
         <ErrorConsole errors={errors} />
       </aside>
+      {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-hidden />}
       <main className="map-canvas">
+        <button
+          className="sidebar-toggle"
+          onClick={() => setSidebarOpen((open) => !open)}
+          aria-expanded={sidebarOpen}
+        >
+          {sidebarOpen ? 'Ocultar panel' : 'Abrir panel'}
+        </button>
         <MapCanvas center={mapCenter} />
         <div className="flow-overlay">
           <ReactFlow
