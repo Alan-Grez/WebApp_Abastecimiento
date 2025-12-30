@@ -23,7 +23,7 @@ Aplicación web para planificar armadas de ataque contra incendios sobre un mapa
    npm install
    npm run dev
    ```
-   Configura la variable `VITE_MAPBOX_TOKEN` con un token público de Mapbox.
+   Incluye un token público de prueba para Mapbox. En producción, define `VITE_MAPBOX_TOKEN` con tu propio token.
 
 3. Abre `http://localhost:5173` (puerto de Vite) y el frontend consumirá la API en `http://localhost:4000`.
 
