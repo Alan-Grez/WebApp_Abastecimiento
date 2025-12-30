@@ -3,11 +3,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { trackError } from '../lib/errorTracking';
 
-// Token público de Mapbox para entornos de pruebas. Sustituye este valor usando
-// la variable VITE_MAPBOX_TOKEN en producción.
-const accessToken =
-  import.meta.env.VITE_MAPBOX_TOKEN ||
-  'pk.eyJ1IjoiYWdyZXoiLCJhIjoiY21qc3A5ODdrNGZrMTNjcXpxMXN0aWd2diJ9.iEvv26EndB_MoqpnYtJVkg';
+const accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
 mapboxgl.accessToken = accessToken;
 
 interface MapCanvasProps {
