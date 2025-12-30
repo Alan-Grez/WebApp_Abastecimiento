@@ -12,6 +12,8 @@ interface MapCanvasProps {
   onReady?: (map: mapboxgl.Map) => void;
 }
 
+
+
 export const MapCanvas: React.FC<MapCanvasProps> = ({ center, onReady }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
