@@ -64,6 +64,7 @@ function App() {
   const [vehicles, setVehicles] = useState<VehicleSpec[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleSpec | undefined>();
   const [errors, setErrors] = useState<TrackedError[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const paletteGroups = useMemo(() => orderedCatalog, []);
 
   useEffect(() => {
